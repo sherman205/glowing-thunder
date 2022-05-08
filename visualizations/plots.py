@@ -39,6 +39,7 @@ def calendar_heatmap(activity_type=None):
 
 	activities_data = strava_core.get_activities_data(d1, d2, activity_type)
 	date_data_map = activities_data.get('date_data_map')
+
 	for date in dates_in_year:
 		# %V is the week number in a year (1-52)
 		inferred_week_no = int(date.strftime("%V"))
@@ -50,16 +51,14 @@ def calendar_heatmap(activity_type=None):
 			weeknumber_of_dates.append(inferred_week_no)
 
 		# create data points
-		value = ''
 		if str(date) not in date_data_map:
 			date_data_map[str(date)]['suffer_score'] = 0
 			date_data_map[str(date)]['activity_count'] = 0
-			value = 'activity_count'
 
 	sorted_date_data_map = OrderedDict(sorted(date_data_map.items()))
 
 	vals = list(sorted_date_data_map.values())
-	z = map(lambda x: x.get(value), vals)
+	z = map(lambda x: x.get('activity_count'), vals)
 	z = np.array(list(z))
 
 	# Format YYYY-MM-DD for hovertext

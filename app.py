@@ -14,7 +14,7 @@ CACHE_CONFIG = {
 
 cache.init_app(app.server, config=CACHE_CONFIG)
 
-figure, activity_types = plots.calendar_heatmap()
+_, activity_types = plots.calendar_heatmap()
 
 app.layout = html.Div(children=[
     html.H1(children='Strava Stats', style={'textAlign': 'center'}),
@@ -26,10 +26,9 @@ app.layout = html.Div(children=[
             value='',
             id='activity-type-dropdown'
         )
-    ], style={'padding': 10}),
+    ], style={'width': '30%', 'padding': 10}),
     dcc.Graph(
-        id='heatmap',
-        figure=figure
+        id='heatmap'
     )
 ])
 
