@@ -6,7 +6,7 @@ from collections import OrderedDict
 from strava import core as strava_core
 
 
-def calendar_heatmap():
+def calendar_heatmap(activity_type=None):
 	"""Create calendar heatmap"""
 	year = datetime.datetime.now().year
 	d1 = datetime.date(year, 1, 1)
@@ -37,9 +37,10 @@ def calendar_heatmap():
 	weekdays_in_year = [i.weekday() for i in dates_in_year]
 	weeknumber_of_dates = []
 
-	date_to_count_map = strava_core.get_activities_count_per_day(d1, d2)
+	activities_data = strava_core.get_activities_data(d1, d2, activity_type)
+	date_data_map = activities_data.get('date_data_map')
 	for date in dates_in_year:
-		# %V is the week number
+		# %V is the week number in a year (1-52)
 		inferred_week_no = int(date.strftime("%V"))
 		if inferred_week_no >= 52 and date.month == 1:
 			weeknumber_of_dates.append(0)
@@ -49,12 +50,17 @@ def calendar_heatmap():
 			weeknumber_of_dates.append(inferred_week_no)
 
 		# create data points
-		if str(date) not in date_to_count_map:
-			date_to_count_map[str(date)] = 0
+		value = ''
+		if str(date) not in date_data_map:
+			date_data_map[str(date)]['suffer_score'] = 0
+			date_data_map[str(date)]['activity_count'] = 0
+			value = 'activity_count'
 
-	sorted_date_to_count_map = OrderedDict(sorted(date_to_count_map.items()))
+	sorted_date_data_map = OrderedDict(sorted(date_data_map.items()))
 
-	z = np.array(list(sorted_date_to_count_map.values()))
+	vals = list(sorted_date_data_map.values())
+	z = map(lambda x: x.get(value), vals)
+	z = np.array(list(z))
 
 	# Format YYYY-MM-DD for hovertext
 	text = [str(i) for i in dates_in_year]
@@ -73,7 +79,7 @@ def calendar_heatmap():
 		)
 	]
 	layout = go.Layout(
-		title='Workouts per Day',
+		title='Number of workouts per day',
 		yaxis=dict(
 			showline=False, showgrid=False, zeroline=False,
 			tickmode='array',
@@ -93,4 +99,4 @@ def calendar_heatmap():
 	)
 
 	fig = go.Figure(data=data, layout=layout)
-	return fig
+	return fig, activities_data.get('activity_types')
