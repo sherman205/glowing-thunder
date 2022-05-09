@@ -6,9 +6,9 @@ from collections import OrderedDict
 from strava import core as strava_core
 
 
-def calendar_heatmap(activity_type=None):
+def calendar_heatmap(activity_type=None, year=None):
 	"""Create calendar heatmap"""
-	year = datetime.datetime.now().year
+	year = year or datetime.datetime.now().year
 	d1 = datetime.date(year, 1, 1)
 	d2 = datetime.date(year, 12, 31)
 	delta = d2 - d1
@@ -37,7 +37,7 @@ def calendar_heatmap(activity_type=None):
 	weekdays_in_year = [i.weekday() for i in dates_in_year]
 	weeknumber_of_dates = []
 
-	activities_data = strava_core.get_activities_data(d1, d2, activity_type)
+	activities_data = strava_core.get_activities_data(d1, d2, activity_type, year)
 	date_data_map = activities_data.get('date_data_map')
 
 	for date in dates_in_year:
@@ -77,6 +77,13 @@ def calendar_heatmap(activity_type=None):
 			colorscale=colorscale
 		)
 	]
+
+	# If all elements in z array are the same, that means they're all 0, so no activities of the filter  criteria
+	# were found, so manually set the colorscale otherwise every cell of the heatmap will be filled in with color
+	if np.all(z == z[0]):
+		data[0].zmin = 0
+		data[0].zmax = 1
+
 	layout = go.Layout(
 		title='Number of workouts per day',
 		yaxis=dict(

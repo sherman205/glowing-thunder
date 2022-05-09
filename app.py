@@ -1,3 +1,4 @@
+from datetime import datetime
 from dash import Dash, html, dcc, Input, Output
 from visualizations import plots
 from utils.config import cache
@@ -20,13 +21,23 @@ app.layout = html.Div(children=[
     html.H1(children='Strava Stats', style={'textAlign': 'center'}),
     html.Div(children='A visualization for your workout data', style={'textAlign': 'center'}),
     html.Div(children=[
-        html.Label('Activity Type'),
-        dcc.Dropdown(
-            options=list(activity_types),
-            value='',
-            id='activity-type-dropdown'
-        )
-    ], style={'width': '30%', 'padding': 10}),
+        html.Div(children=[
+            html.Label('Year'),
+            dcc.Dropdown(
+                options=[2018, 2019, 2020, 2021, 2022],
+                value=datetime.today().year,
+                id='year-dropdown'
+            )
+        ], style={'width': '10%', 'padding': 10}),
+        html.Div(children=[
+            html.Label('Activity Type'),
+            dcc.Dropdown(
+                options=list(activity_types),
+                value='',
+                id='activity-type-dropdown'
+            )
+        ], style={'width': '10%', 'padding': 10})
+    ], style={'padding': 10, 'display': 'flex'}),
     dcc.Graph(
         id='heatmap'
     )
@@ -35,10 +46,11 @@ app.layout = html.Div(children=[
 
 @app.callback(
     Output('heatmap', 'figure'),
-    Input('activity-type-dropdown', 'value')
+    Input('activity-type-dropdown', 'value'),
+    Input('year-dropdown', 'value')
 )
-def update_graph(activity_type):
-    fig, _ = plots.calendar_heatmap(activity_type)
+def update_graph(activity_type, year):
+    fig, _ = plots.calendar_heatmap(activity_type, year)
     return fig
 
 
